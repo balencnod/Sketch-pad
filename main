@@ -1,0 +1,208 @@
+#include <graphics.h>
+#include <stdio.h> 
+#include <math.h>
+#include "draw.h"//这个源文件主要包含绘图函数
+#include "menu.h"//这个源文件主要包含菜单函数
+#include "UI.h"//这个源文件与界面有关
+#include "CG.h" //这个源文件主要包含过场动画
+#include "mouse.h"//这个源文件主要包含鼠绘图函数
+
+extern mouse_msg msg = { 0 };//声明鼠标结构体
+
+int main(){
+
+	initialization();//初始化绘图面板。
+	CG_op();//过场动画。
+
+//声明变量。
+	int i = 0;
+	int load_return, CG_ed_return;
+	int c_menu, c_paint,c_rewrite,c_i,c_mouse;
+	int save_circledat = 0, save_linedat = 0, save_rectangledat = 0, save_polydat = 0;
+
+//读取文件模块。
+	load_return = load(msg);
+	switch (load_return) {
+	case 1:
+		load_circle();
+		load_line();
+		load_rectangle();
+		load_poly();
+		break;
+	case 2:
+		break;
+	}
+
+//菜单模块。
+	menu:
+	char str_menu[10];
+	inputbox_getline("请选择需要进行的操作 ", "1.清空画板.\n2.使用键盘作画 .     3.使用鼠标作画.\n4.重画原有图形.\n5.关闭选择框10秒钟\n6.退出.\n", str_menu, 10);
+	re_menu:
+	c_menu = atoi(str_menu);
+	switch (c_menu) {
+	case 1:
+		cleardevice();
+		goto menu;//用于跳转至菜单界面
+		break;	
+
+	case 2://键盘作画模块。
+	    return_back_to_keyboard_part:
+
+		//选择颜色。
+		setcolor_func();
+
+		//作图。
+		char str_paint[2];
+		inputbox_getline("请选择需要进行的操作。", "1.做圆。\n2.做直线。\n3.做矩形。\n4.做多边形\n5.返回\n", str_paint, 2);
+		re_draw:
+		c_paint = atoi(str_paint);
+		switch (c_paint) {
+		case 1:
+			save_circledat = circle_func();
+			break;
+		case 2:
+			save_linedat = line_func();
+			break;
+		case 3:
+			save_rectangledat = rectangle_func();
+			break;
+		case 4:
+			save_polydat = poly_func();
+			break;
+		case 5:
+			goto menu;
+			break;
+		default://用于对输入的值进行检查。
+			inputbox_getline("请选择正确的操作。", "1.做圆。\n2.做直线。\n3.做矩形。\n4.做多边形\n5.取消\n", str_paint, 2);
+			goto re_draw;//返回switch重新判断
+			break;
+		}
+		goto return_back_to_keyboard_part;
+
+	case 3://鼠标作画模块。
+
+			//作画部分。
+		re_mouse:
+			setcolor_func();
+			char str_mouse[10];
+			inputbox_getline("请选择操作。", "1.做圆。\n做圆时使用鼠标左右键作圆\n2.做直线。\n做直线时使用鼠标左右键作直线\n3.返回\n注意：鼠绘图形不能保存", str_mouse, 2);
+		re_mousecheck:
+			c_mouse = atoi(str_mouse);
+			switch (c_mouse) {
+			case 1:
+				mouse_circle(msg);
+				goto re_mouse;
+				break;
+			case 2:
+				mouse_line(msg);
+				goto re_mouse;
+				break;
+			case 3:
+				goto menu;
+				break;
+			default://对输入的值进行检查
+				inputbox_getline("请选择正确的操作。", "1.做圆。\n做圆时使用鼠标左右键作圆\n2.做直线。\n做直线时使用鼠标左右键作直线\n3.返回\n注意：鼠绘图形不能保存", str_mouse, 2);
+				goto re_mousecheck;//返回switch重新判断
+				break;
+			}
+
+	case 4://重画模块
+		char str_rewrite[10];
+		char str_i[10];
+		inputbox_getline("请选择需要重画的图形。", "1.圆。\n2.直线。\n3.矩形。\n4.多边形\n5.返回\n", str_rewrite, 2);
+	re_rewrite:
+		c_rewrite = atoi(str_rewrite);
+		switch (c_rewrite) {
+		case 1:
+			inputbox_getline("请输入需要重画圆的序号。", "注意：序号从零开始，最大为63", str_i, 10);
+		re_recircle:
+			c_i = atoi(str_i);
+			if (c_i <= 63 && c_i >= 0) {//这个判断用于检查输入的值
+				rewrite_circle(c_i);//这个函数用于重画圆
+				goto menu;
+			}
+			else {
+				inputbox_getline("请输入正确的需要重画圆的序号。", "注意：序号从零开始，最大为63", str_i, 10);
+				goto re_recircle;//用于返回以重新赋值
+			}
+
+		case 2:
+			inputbox_getline("请输入需要重画直线的序号。", "注意：序号从零开始，最大为63", str_i, 10);
+		re_reline:
+			c_i = atoi(str_i);
+			if (c_i <= 63 && c_i >= 0) {//这个判断用于检查输入的值
+				rewrite_line(c_i);//这个函数用于重画直线
+				goto menu;
+			}
+			else {
+				inputbox_getline("请输入正确的需要重画直线的序号。", "注意：序号从零开始，最大为63", str_i, 10);
+				goto re_reline;//用于返回以重新赋值
+			}
+
+		case 3:
+			inputbox_getline("请输入需要重画矩形的序号。", "注意：序号从零开始，最大为63", str_i, 10);
+		re_rerectangle:
+			c_i = atoi(str_i);
+			if (c_i <= 63 && c_i >= 0) {//这个判断用于检查输入的值
+				rewrite_rectangle(c_i);//这个函数用于重画矩形
+				goto menu;
+			}
+			else {
+				inputbox_getline("请输入正确的需要重画矩形的序号。", "注意：序号从零开始，最大为63", str_i, 10);
+				goto re_rerectangle;//用于返回以重新赋值
+			}
+
+		case 4:
+			inputbox_getline("请输入需要重画多边形的序号。", "注意：序号从零开始，最大为63", str_i, 10);
+		re_repoly:
+			c_i = atoi(str_i);
+			if (c_i <= 63 && c_i >= 0) {//这个判断用于检查输入的值
+				rewrite_poly(c_i);//这个函数用于重画多边形
+				goto menu;
+			}
+			else {
+				inputbox_getline("请输入正确的需要重画多边形的序号。", "注意：序号从零开始，最大为63", str_i, 10);
+				goto re_repoly;//用于返回以重新赋值
+			}
+
+		case 5:
+			goto menu;
+			break;
+
+		default://用于判断输入的值是否正确
+			inputbox_getline("请正确选择需要重画的图形。", "1.圆。\n2.直线。\n3.矩形。\n4.多边形\n5.返回\n", str_rewrite, 2);
+			goto re_rewrite;//返回switch重新赋值
+			break;
+		}
+		goto return_back_to_keyboard_part;//这个跳转用于以防万一，但从程序上，没有任何路径通向这个goto
+
+	case 5:
+		delay_ms(10000);
+		goto menu;
+		break;
+
+	case 6://关闭绘图程序模块
+		cleardevice();
+		CG_ed_return = save(msg);
+		switch (CG_ed_return) {//这个函数用于判断是否保存
+		case 1:
+			save_circle(save_circledat);
+			save_line(save_linedat);
+			save_rectangle(save_rectangledat);
+			save_poly(save_polydat);
+			break;
+		case 2:
+			break;
+		}
+
+		end();//这个函数用于播放结束动画
+		break;
+
+	default://这个函数用于检查值
+		inputbox_getline("请选择正确的操作 ", "1.清空画板.\n2.使用键盘作画 .      3.使用鼠标作画 .\n4.重画原有图形.\n5.关闭选择框10秒钟\n6.退出.\n", str_menu, 10);
+		goto re_menu;//返回switch重新赋值
+		break;
+	}
+
+	return 0;
+}
