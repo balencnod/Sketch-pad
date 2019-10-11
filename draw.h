@@ -1,0 +1,17 @@
+int circle_func();
+int line_func();
+int rectangle_func();
+int setcolor_func();
+int poly_func();
+void rewrite_circle(int i);
+void rewrite_line(int i);
+void rewrite_rectangle(int i);
+void rewrite_poly(int i);
+void save_circle(int circlenum);
+void save_line(int linenum);
+void save_rectangle(int rectanglenum);
+void save_poly(int polynum);
+void load_circle();
+void load_line();
+void load_rectangle();
+void load_poly();
